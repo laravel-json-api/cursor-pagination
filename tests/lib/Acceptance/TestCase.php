@@ -19,6 +19,7 @@ declare(strict_types=1);
 
 namespace LaravelJsonApi\CursorPagination\Tests\Acceptance;
 
+use Illuminate\Foundation\Testing\Concerns\InteractsWithDeprecationHandling;
 use LaravelJsonApi\Contracts\Schema\Container as SchemaContainerContract;
 use LaravelJsonApi\Contracts\Server\Server;
 use LaravelJsonApi\Core\Schema\Container as SchemaContainer;
@@ -26,12 +27,16 @@ use Orchestra\Testbench\TestCase as BaseTestCase;
 
 class TestCase extends BaseTestCase
 {
+    use InteractsWithDeprecationHandling;
+
     /**
      * @inheritDoc
      */
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->withoutDeprecationHandling();
 
         $this->loadMigrationsFrom(__DIR__ . '/../../database/migrations');
 
