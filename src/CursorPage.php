@@ -23,6 +23,7 @@ use InvalidArgumentException;
 use LaravelJsonApi\Core\Document\Link;
 use LaravelJsonApi\Core\Pagination\AbstractPage;
 use LaravelJsonApi\CursorPagination\Cursor\CursorPaginator;
+use Traversable;
 
 class CursorPage extends AbstractPage
 {
@@ -179,7 +180,7 @@ class CursorPage extends AbstractPage
     /**
      * @inheritDoc
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         yield from $this->paginator;
     }
@@ -187,7 +188,7 @@ class CursorPage extends AbstractPage
     /**
      * @inheritDoc
      */
-    public function count()
+    public function count(): int
     {
         return $this->paginator->count();
     }

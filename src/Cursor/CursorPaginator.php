@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Pagination\Paginator;
 use IteratorAggregate;
 use LogicException;
+use Traversable;
 
 class CursorPaginator implements IteratorAggregate, Countable
 {
@@ -154,7 +155,7 @@ class CursorPaginator implements IteratorAggregate, Countable
     /**
      * @inheritDoc
      */
-    public function getIterator()
+    public function getIterator(): Traversable
     {
         yield from $this->items;
     }
@@ -162,7 +163,7 @@ class CursorPaginator implements IteratorAggregate, Countable
     /**
      * @inheritDoc
      */
-    public function count()
+    public function count(): int
     {
         return $this->items->count();
     }
