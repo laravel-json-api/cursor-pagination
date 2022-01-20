@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file. This projec
 
 ### Added
 
+- Package now supports Laravel 9.
 - Package now supports PHP 8.1.
 - Upgraded to v2 of the `laravel-json-api/eloquent` dependency.
 
