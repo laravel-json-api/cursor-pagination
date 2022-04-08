@@ -19,6 +19,7 @@ declare(strict_types=1);
 
 namespace LaravelJsonApi\CursorPagination;
 
+use Closure;
 use InvalidArgumentException;
 use LaravelJsonApi\Contracts\Pagination\Page;
 use LaravelJsonApi\Core\Pagination\Concerns\HasPageMeta;
@@ -60,6 +61,11 @@ class CursorPagination implements Paginator
      * @var string|null
      */
     private ?string $primaryKey = null;
+
+    /**
+     * @var Closure|null
+     */
+    private ?Closure $keyDecoderCallback = null;
 
     /**
      * @var string|array|null
@@ -195,6 +201,22 @@ class CursorPagination implements Paginator
     }
 
     /**
+     * Set the decoder callback for paginator key column values.
+     *
+     * In case key column value is stored not as a string, for example uuid in binary format,
+     * it has to be decoded before passing it to Cursor.
+     *
+     * @param callable $callback
+     * @return $this
+     */
+    public function withKeyDecoder(callable $callback): self
+    {
+        $this->keyDecoderCallback = Closure::fromCallable($callback);
+
+        return $this;
+    }
+
+    /**
      * @inheritDoc
      */
     public function withColumns($columns): self
@@ -260,10 +282,22 @@ class CursorPagination implements Paginator
         $limit = $page[$this->limit] ?? null;
 
         return new Cursor(
-            !is_null($before) ? strval($before) : null,
-            !is_null($after) ? strval($after) : null,
+            !is_null($before) ? $this->decodePaginationKey($before) : null,
+            !is_null($after) ? $this->decodePaginationKey($after) : null,
             !is_null($limit) ? intval($limit) : null,
         );
     }
 
+    /**
+     * Apply key value decoder callback if it's not null.
+     *
+     * @param $value
+     * @return string
+     */
+    private function decodePaginationKey($value): string
+    {
+        $decoded = $this->keyDecoderCallback ? ($this->keyDecoderCallback)($value) : $value;
+
+        return strval($decoded);
+    }
 }
