@@ -720,6 +720,39 @@ class Test extends TestCase
     }
 
     /**
+     * Test use of the cursor paginator where the pagination column value is encoded
+     */
+    public function testCursorColumnEncoded(): void
+    {
+        $this->paginator->withCursorColumn('uuid')->withKeyDecoder(fn($v) => base64_decode($v));
+
+        $videos = Video::factory()->count(6)->create([
+            'created_at' => fn() => $this->faker->unique()->dateTime(),
+        ])->sortByDesc('uuid')->values();
+
+        $expected = [$videos[1], $videos[2], $videos[3]];
+
+        $meta = [
+            'from' => $expected[0]->getRouteKey(),
+            'hasMore' => true,
+            'perPage' => 3,
+            'to' => $expected[2]->getRouteKey(),
+        ];
+
+        $links = $this->createLinks($expected[0], $expected[2], 3);
+
+        $page = $this->videos->repository()->queryAll()->paginate([
+            'limit' => '3',
+            'before' => base64_encode($videos[4]->getRouteKey()),
+            'after' => base64_encode($videos[1]->getRouteKey()),
+        ]);
+
+        $this->assertSame(['page' => $meta], $page->meta());
+        $this->assertSame($links, $page->links()->toArray());
+        $this->assertPage($expected, $page);
+    }
+
+    /**
      * @param Model $from
      * @param Model $to
      * @param int $limit
