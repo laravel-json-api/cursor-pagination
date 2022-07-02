@@ -82,7 +82,7 @@ class Test extends TestCase
         $this->videos->method('defaultPagination')->willReturn(['limit' => '3']);
 
         $videos = Video::factory()->count(5)->create([
-            'created_at' => fn() => $this->faker->dateTime,
+            'created_at' => fn() => $this->faker->dateTime(),
         ])->sortByDesc('created_at')->values();
 
         $expected = $videos->take(3);
@@ -191,7 +191,7 @@ class Test extends TestCase
     public function testOnlyLimit(): void
     {
         $videos = Video::factory()->count(5)->create([
-            'created_at' => fn() => $this->faker->unique()->dateTime,
+            'created_at' => fn() => $this->faker->unique()->dateTime(),
         ])->sortByDesc('created_at')->values();
 
         $meta = [
@@ -213,7 +213,7 @@ class Test extends TestCase
     public function testBefore(): void
     {
         $videos = Video::factory()->count(10)->create([
-            'created_at' => fn() => $this->faker->unique()->dateTime,
+            'created_at' => fn() => $this->faker->unique()->dateTime(),
         ])->sortByDesc('created_at')->values();
 
         $expected = [$videos[4], $videos[5], $videos[6]];
@@ -242,7 +242,7 @@ class Test extends TestCase
         $this->paginator->withAscending();
 
         $videos = Video::factory()->count(10)->create([
-            'created_at' => fn() => $this->faker->unique()->dateTime,
+            'created_at' => fn() => $this->faker->unique()->dateTime(),
         ])->sortBy('created_at')->values();
 
         $expected = [$videos[4], $videos[5], $videos[6]];
@@ -307,14 +307,14 @@ class Test extends TestCase
         $this->expectExceptionMessage('does not exist');
 
         $this->videos->repository()->queryAll()->paginate([
-            'before' => $this->faker->uuid,
+            'before' => $this->faker->uuid(),
         ]);
     }
 
     public function testAfter(): void
     {
         $videos = Video::factory()->count(10)->create([
-            'created_at' => fn() => $this->faker->unique()->dateTime,
+            'created_at' => fn() => $this->faker->unique()->dateTime(),
         ])->sortByDesc('created_at')->values();
 
         $expected = [$videos[4], $videos[5], $videos[6]];
@@ -343,7 +343,7 @@ class Test extends TestCase
         $this->paginator->withAscending();
 
         $videos = Video::factory()->count(10)->create([
-            'created_at' => fn() => $this->faker->unique()->dateTime,
+            'created_at' => fn() => $this->faker->unique()->dateTime(),
         ])->sortBy('created_at')->values();
 
         $expected = [$videos[4], $videos[5], $videos[6]];
@@ -370,7 +370,7 @@ class Test extends TestCase
     public function testAfterWithoutMore(): void
     {
         $videos = Video::factory()->count(4)->create([
-            'created_at' => fn() => $this->faker->unique()->dateTime,
+            'created_at' => fn() => $this->faker->unique()->dateTime(),
         ])->sortByDesc('created_at')->values();
 
         $expected = [$videos[2], $videos[3]];
@@ -434,7 +434,7 @@ class Test extends TestCase
             ->withLimitKey('per-page');
 
         $videos = Video::factory()->count(6)->create([
-            'created_at' => fn() => $this->faker->dateTime,
+            'created_at' => fn() => $this->faker->dateTime(),
         ])->sortByDesc('created_at')->values();
 
         $expected = [$videos[2], $videos[3], $videos[4]];
@@ -493,7 +493,7 @@ class Test extends TestCase
         $this->expectExceptionMessage('does not exist');
 
         $this->videos->repository()->queryAll()->paginate([
-            'after' => $this->faker->uuid,
+            'after' => $this->faker->uuid(),
         ]);
     }
 
@@ -503,7 +503,7 @@ class Test extends TestCase
     public function testBeforeAndAfter(): void
     {
         $videos = Video::factory()->count(6)->create([
-            'created_at' => fn() => $this->faker->unique()->dateTime,
+            'created_at' => fn() => $this->faker->unique()->dateTime(),
         ])->sortByDesc('created_at')->values();
 
         $expected = [$videos[2], $videos[3], $videos[4]];
@@ -537,7 +537,7 @@ class Test extends TestCase
         $this->paginator->withCursorColumn('uuid');
 
         $videos = Video::factory()->count(6)->create([
-            'created_at' => fn() => $this->faker->unique()->dateTime,
+            'created_at' => fn() => $this->faker->unique()->dateTime(),
         ])->sortByDesc('uuid')->values();
 
         $expected = [$videos[1], $videos[2], $videos[3]];
@@ -567,7 +567,7 @@ class Test extends TestCase
         $this->paginator->withMetaKey('cursor')->withSnakeCaseMeta();
 
         $videos = Video::factory()->count(6)->create([
-            'created_at' => fn() => $this->faker->unique()->dateTime,
+            'created_at' => fn() => $this->faker->unique()->dateTime(),
         ])->sortByDesc('created_at')->values();
 
         $expected = [$videos[1], $videos[2], $videos[3]];
@@ -593,7 +593,7 @@ class Test extends TestCase
         $this->paginator->withDashCaseMeta();
 
         $videos = Video::factory()->count(6)->create([
-            'created_at' => fn() => $this->faker->unique()->dateTime,
+            'created_at' => fn() => $this->faker->unique()->dateTime(),
         ])->sortByDesc('created_at')->values();
 
         $expected = [$videos[1], $videos[2], $videos[3]];
@@ -622,7 +622,7 @@ class Test extends TestCase
         $this->paginator->withCursorColumn('updated_at');
 
         $videos = Video::factory()->count(6)->create([
-            'updated_at' => fn() => $this->faker->unique()->dateTime,
+            'updated_at' => fn() => $this->faker->unique()->dateTime(),
         ])->sortByDesc('updated_at')->values();
 
         $expected = [$videos[1], $videos[2], $videos[3]];
@@ -654,7 +654,7 @@ class Test extends TestCase
         $expected = (new Video())->getPerPage();
 
         $videos = Video::factory()->count($expected + 5)->create([
-            'created_at' => fn() => $this->faker->dateTime,
+            'created_at' => fn() => $this->faker->dateTime(),
         ])->sortByDesc('created_at')->values();
 
         $meta = [
@@ -683,7 +683,7 @@ class Test extends TestCase
         $this->paginator->withDefaultPerPage($expected);
 
         $videos = Video::factory()->count($expected + 5)->create([
-            'created_at' => fn() => $this->faker->dateTime,
+            'created_at' => fn() => $this->faker->dateTime(),
         ])->sortByDesc('created_at')->values();
 
         $meta = [
@@ -707,7 +707,7 @@ class Test extends TestCase
         $this->paginator->withoutMeta();
 
         $videos = Video::factory()->count(4)->create([
-            'created_at' => fn() => $this->faker->dateTime,
+            'created_at' => fn() => $this->faker->dateTime(),
         ])->sortByDesc('created_at')->values();
 
         $links = $this->createLinks($videos[0], $videos[2], 3);
