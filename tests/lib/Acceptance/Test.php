@@ -29,6 +29,7 @@ use Illuminate\Support\LazyCollection;
 use LaravelJsonApi\Core\Support\Arr;
 use LaravelJsonApi\CursorPagination\CursorPage;
 use LaravelJsonApi\CursorPagination\CursorPagination;
+use LaravelJsonApi\CursorPagination\Tests\EncodedId;
 
 class Test extends TestCase
 {
@@ -37,6 +38,11 @@ class Test extends TestCase
      * @var CursorPagination
      */
     private CursorPagination $paginator;
+
+    /**
+     * @var EncodedId|null
+     */
+    private ?EncodedId $encodedId = null;
 
     /**
      * @var VideoSchema
@@ -63,7 +69,9 @@ class Test extends TestCase
             ->setConstructorArgs(['server' => $this->server()])
             ->getMock();
 
-        $this->videos->method('pagination')->willReturn($this->paginator);
+        $this->videos->method('pagination')->willReturnCallback(
+            fn() => $this->paginator,
+        );
 
         $this->app->instance(VideoSchema::class, $this->videos);
 
@@ -296,6 +304,35 @@ class Test extends TestCase
         $this->assertPage($expected, $page);
     }
 
+    public function testBeforeWithIdEncoding(): void
+    {
+        $this->withIdEncoding();
+
+        $videos = Video::factory()->count(10)->create([
+            'created_at' => fn() => $this->faker->unique()->dateTime(),
+        ])->sortByDesc('created_at')->values();
+
+        $expected = [$videos[4], $videos[5], $videos[6]];
+
+        $meta = [
+            'from' => $this->encodedId->encode($expected[0]->getRouteKey()),
+            'hasMore' => true,
+            'perPage' => 3,
+            'to' => $this->encodedId->encode($expected[2]->getRouteKey()),
+        ];
+
+        $links = $this->createLinks($expected[0], $expected[2], 3);
+
+        $page = $this->videos->repository()->queryAll()->paginate([
+            'before' => $this->encodedId->encode($videos[7]->getRouteKey()),
+            'limit' => 3,
+        ]);
+
+        $this->assertSame(['page' => $meta], $page->meta());
+        $this->assertSame($links, $page->links()->toArray());
+        $this->assertPage($expected, $page);
+    }
+
     /**
      * If the before key does not exist, we expect the cursor builder
      * to throw an exception which would constitute an internal server error.
@@ -308,6 +345,26 @@ class Test extends TestCase
 
         $this->videos->repository()->queryAll()->paginate([
             'before' => $this->faker->uuid(),
+        ]);
+    }
+
+    /**
+     * If an encoded id does not decode correctly, we expect an exception to be thrown.
+     * This would be an internal server error. Applications should validate the id to
+     * ensure it matches the expected pattern to decode.
+     */
+    public function testBeforeDoesNotDecode(): void
+    {
+        $this->withIdEncoding();
+
+        $videos = Video::factory()->count(2)->create();
+        $invalidId = 'BLAH-' . $videos[1]->getRouteKey();
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('did not decode');
+
+        $this->videos->repository()->queryAll()->paginate([
+            'before' => $invalidId,
         ]);
     }
 
@@ -482,6 +539,35 @@ class Test extends TestCase
         $this->assertPage($expected, $page);
     }
 
+    public function testAfterWithIdEncoding(): void
+    {
+        $this->withIdEncoding();
+
+        $videos = Video::factory()->count(10)->create([
+            'created_at' => fn() => $this->faker->unique()->dateTime(),
+        ])->sortByDesc('created_at')->values();
+
+        $expected = [$videos[4], $videos[5], $videos[6]];
+
+        $meta = [
+            'from' => $this->encodedId->encode($expected[0]->getRouteKey()),
+            'hasMore' => true,
+            'perPage' => 3,
+            'to' => $this->encodedId->encode($expected[2]->getRouteKey()),
+        ];
+
+        $links = $this->createLinks($expected[0], $expected[2], 3);
+
+        $page = $this->videos->repository()->queryAll()->paginate([
+            'after' => $this->encodedId->encode($videos[3]->getRouteKey()),
+            'limit' => '3',
+        ]);
+
+        $this->assertSame(['page' => $meta], $page->meta());
+        $this->assertSame($links, $page->links()->toArray());
+        $this->assertPage($expected, $page);
+    }
+
     /**
      * If the after key does not exist, we expect the cursor builder
      * to throw an exception which would constitute an internal server error.
@@ -494,6 +580,26 @@ class Test extends TestCase
 
         $this->videos->repository()->queryAll()->paginate([
             'after' => $this->faker->uuid(),
+        ]);
+    }
+
+    /**
+     * If an encoded id does not decode correctly, we expect an exception to be thrown.
+     * This would be an internal server error. Applications should validate the id to
+     * ensure it matches the expected pattern to decode.
+     */
+    public function testAfterDoesNotDecode(): void
+    {
+        $this->withIdEncoding();
+
+        $videos = Video::factory()->count(2)->create();
+        $invalidId = 'BLAH-' . $videos[0]->getRouteKey();
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('did not decode');
+
+        $this->videos->repository()->queryAll()->paginate([
+            'after' => $invalidId,
         ]);
     }
 
@@ -727,6 +833,14 @@ class Test extends TestCase
      */
     private function createLinks(Model $from, Model $to, int $limit): array
     {
+        $fromId = $from->getRouteKey();
+        $toId = $to->getRouteKey();
+
+        if ($this->encodedId) {
+            $fromId = $this->encodedId->encode($fromId);
+            $toId = $this->encodedId->encode($toId);
+        }
+
         return [
             'first' => [
                 'href' => 'http://localhost/api/v1/videos?' . Arr::query([
@@ -738,7 +852,7 @@ class Test extends TestCase
             'next' => [
                 'href' => 'http://localhost/api/v1/videos?' . Arr::query([
                         'page' => [
-                            'after' => $to->getRouteKey(),
+                            'after' => $toId,
                             'limit' => $limit,
                         ],
                     ]),
@@ -746,7 +860,7 @@ class Test extends TestCase
             'prev' => [
                 'href' => 'http://localhost/api/v1/videos?' . Arr::query([
                     'page' => [
-                        'before' => $from->getRouteKey(),
+                        'before' => $fromId,
                         'limit' => $limit,
                     ],
                 ]),
@@ -766,5 +880,15 @@ class Test extends TestCase
         $actual = (new Collection($actual))->modelKeys();
 
         $this->assertSame(array_values($expected), array_values($actual));
+    }
+
+    /**
+     * @return void
+     */
+    private function withIdEncoding(): void
+    {
+        $this->paginator = CursorPagination::make(
+            $this->encodedId = new EncodedId()
+        );
     }
 }

@@ -24,8 +24,11 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use InvalidArgumentException;
+use LaravelJsonApi\Contracts\Schema\ID;
+use LaravelJsonApi\Core\Schema\IdParser;
 use LogicException;
 use OutOfRangeException;
+use RuntimeException;
 use function in_array;
 
 class CursorBuilder
@@ -35,6 +38,11 @@ class CursorBuilder
      * @var Builder|Relation
      */
     private $query;
+
+    /**
+     * @var ID|null
+     */
+    private ?ID $id = null;
 
     /**
      * @var string
@@ -79,6 +87,17 @@ class CursorBuilder
         $this->column = $column ?: $this->guessColumn();
         $this->keyName = $key ?: $this->guessKey();
         $this->direction = 'desc';
+    }
+
+    /**
+     * @param ID|null $id
+     * @return $this
+     */
+    public function withIdField(?ID $id): self
+    {
+        $this->id = $id;
+
+        return $this;
     }
 
     /**
@@ -178,7 +197,8 @@ class CursorBuilder
     private function next(Cursor $cursor, $columns): CursorPaginator
     {
         if ($cursor->isAfter()) {
-            $this->whereId($cursor->getAfter(), $this->isDescending() ? '<' : '>');
+            $afterId = $this->decodeId($cursor->getAfter());
+            $this->whereId($afterId, $this->isDescending() ? '<' : '>');
         }
 
         $items = $this
@@ -187,12 +207,15 @@ class CursorBuilder
 
         $more = $items->count() > $cursor->getLimit();
 
-        return new CursorPaginator(
+        $paginator = new CursorPaginator(
             $items->slice(0, $cursor->getLimit()),
             $more,
             $cursor,
             $this->getUnqualifiedKey()
         );
+        $paginator->withIdField($this->id);
+
+        return $paginator;
     }
 
     /**
@@ -212,14 +235,36 @@ class CursorBuilder
      */
     private function previous(Cursor $cursor, $columns): CursorPaginator
     {
+        $beforeId = $this->decodeId($cursor->getBefore());
+
         $items = $this
-            ->whereId($cursor->getBefore(), $this->isDescending() ? '>' : '<')
+            ->whereId($beforeId, $this->isDescending() ? '>' : '<')
             ->orderForPrevious()
             ->get($cursor->getLimit(), $columns)
             ->reverse()
             ->values();
 
-        return new CursorPaginator($items, true, $cursor, $this->getUnqualifiedKey());
+        $paginator = new CursorPaginator($items, true, $cursor, $this->getUnqualifiedKey());
+        $paginator->withIdField($this->id);
+
+        return $paginator;
+    }
+
+    /**
+     * @param int|string $id
+     * @return int|string
+     */
+    private function decodeId($id)
+    {
+        $decoded = IdParser::make($this->id)->decodeIfMatch($id);
+
+        if (null === $decoded) {
+            throw new RuntimeException(
+                "Cursor key {$id} did not decode. Use validation to ensure the key matches the expected pattern."
+            );
+        }
+
+        return $decoded;
     }
 
     /**

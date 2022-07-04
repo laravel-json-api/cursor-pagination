@@ -23,6 +23,8 @@ use Countable;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Pagination\Paginator;
 use IteratorAggregate;
+use LaravelJsonApi\Contracts\Schema\ID;
+use LaravelJsonApi\Core\Schema\IdParser;
 use LogicException;
 use Traversable;
 
@@ -55,6 +57,11 @@ class CursorPaginator implements IteratorAggregate, Countable
     private ?string $path;
 
     /**
+     * @var ID|null
+     */
+    private ?ID $id = null;
+
+    /**
      * CursorPaginator constructor.
      *
      * @param EloquentCollection $items
@@ -73,6 +80,17 @@ class CursorPaginator implements IteratorAggregate, Countable
     }
 
     /**
+     * @param ID|null $id
+     * @return $this
+     */
+    public function withIdField(?ID $id): self
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
+    /**
      * @return EloquentCollection
      */
     public function getItems(): EloquentCollection
@@ -86,7 +104,9 @@ class CursorPaginator implements IteratorAggregate, Countable
     public function firstItem()
     {
         if ($first = $this->items->first()) {
-            return $first->{$this->key};
+            return IdParser::make($this->id)->encode(
+                $first->{$this->key},
+            );
         }
 
         return null;
@@ -98,7 +118,9 @@ class CursorPaginator implements IteratorAggregate, Countable
     public function lastItem()
     {
         if ($last = $this->items->last()) {
-            return $last->{$this->key};
+            return IdParser::make($this->id)->encode(
+                $last->{$this->key},
+            );
         }
 
         return null;
