@@ -32,11 +32,6 @@ class CursorPagination implements Paginator
     use HasPageMeta;
 
     /**
-     * @var ID|null
-     */
-    private ?ID $id;
-
-    /**
      * @var string
      */
     private string $before;
@@ -79,10 +74,10 @@ class CursorPagination implements Paginator
     /**
      * Fluent constructor.
      *
-     * @param ID|null $id
+     * @param ID $id
      * @return CursorPagination
      */
-    public static function make(ID $id = null): self
+    public static function make(ID $id): self
     {
         return new static($id);
     }
@@ -90,11 +85,10 @@ class CursorPagination implements Paginator
     /**
      * CursorPagination constructor.
      *
-     * @param ID|null $id
+     * @param ID $id
      */
-    public function __construct(ID $id = null)
+    public function __construct(private readonly ID $id)
     {
-        $this->id = $id;
         $this->before = 'before';
         $this->after = 'after';
         $this->limit = 'limit';

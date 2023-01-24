@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file. This projec
 ### Changed
 
 - Upgrade to Laravel 10 and set minimum PHP version to 8.1.
+- **BREAKING**: The schema's id field must now always be provided to the `CursorPagination::make()` method and/or
+  constructor.
 
 ## [2.1.0] - 2023-01-24
 

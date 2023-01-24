@@ -30,6 +30,7 @@ use LaravelJsonApi\Core\Support\Arr;
 use LaravelJsonApi\CursorPagination\CursorPage;
 use LaravelJsonApi\CursorPagination\CursorPagination;
 use LaravelJsonApi\CursorPagination\Tests\EncodedId;
+use LaravelJsonApi\Eloquent\Fields\ID;
 
 class Test extends TestCase
 {
@@ -61,7 +62,9 @@ class Test extends TestCase
     {
         parent::setUp();
 
-        $this->paginator = CursorPagination::make();
+        $this->paginator = CursorPagination::make(
+            ID::make()->uuid()
+        );
 
         $this->videos = $this
             ->getMockBuilder(VideoSchema::class)
