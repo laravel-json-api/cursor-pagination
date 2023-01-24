@@ -113,5 +113,4 @@ class Cursor
     {
         return $this->limit;
     }
-
 }

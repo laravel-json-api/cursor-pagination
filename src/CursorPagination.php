@@ -21,6 +21,7 @@ namespace LaravelJsonApi\CursorPagination;
 
 use InvalidArgumentException;
 use LaravelJsonApi\Contracts\Pagination\Page;
+use LaravelJsonApi\Contracts\Schema\ID;
 use LaravelJsonApi\Core\Pagination\Concerns\HasPageMeta;
 use LaravelJsonApi\CursorPagination\Cursor\Cursor;
 use LaravelJsonApi\CursorPagination\Cursor\CursorBuilder;
@@ -28,8 +29,12 @@ use LaravelJsonApi\Eloquent\Contracts\Paginator;
 
 class CursorPagination implements Paginator
 {
-
     use HasPageMeta;
+
+    /**
+     * @var ID|null
+     */
+    private ?ID $id;
 
     /**
      * @var string
@@ -74,18 +79,22 @@ class CursorPagination implements Paginator
     /**
      * Fluent constructor.
      *
+     * @param ID|null $id
      * @return CursorPagination
      */
-    public static function make(): self
+    public static function make(ID $id = null): self
     {
-        return new static();
+        return new static($id);
     }
 
     /**
-     * CursorStrategy constructor.
+     * CursorPagination constructor.
+     *
+     * @param ID|null $id
      */
-    public function __construct()
+    public function __construct(ID $id = null)
     {
+        $this->id = $id;
         $this->before = 'before';
         $this->after = 'after';
         $this->limit = 'limit';
@@ -223,6 +232,7 @@ class CursorPagination implements Paginator
     {
         $paginator = $this
             ->query($query)
+            ->withIdField($this->id)
             ->withDirection($this->direction)
             ->withDefaultPerPage($this->defaultPerPage)
             ->paginate($this->cursor($page), $this->columns ?: ['*']);

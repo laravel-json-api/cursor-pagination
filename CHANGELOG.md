@@ -3,6 +3,20 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## [2.1.0] - 2023-01-24
+
+### Added
+
+- The cursor pagination implementation now supports id fields that are encoded. To use, pass your schema's id
+  field to the cursor pagination class when returning it from the schema's `pagination()` method. For example:
+
+```php
+public function pagination(): CursorPagination
+{
+    return CursorPagination::make($this->id());
+}
+```
+
 ## [2.0.0] - 2022-02-09
 
 ### Added
