@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ use LaravelJsonApi\Core\Support\Arr;
 use LaravelJsonApi\CursorPagination\CursorPage;
 use LaravelJsonApi\CursorPagination\CursorPagination;
 use LaravelJsonApi\CursorPagination\Tests\EncodedId;
+use LaravelJsonApi\Eloquent\Fields\ID;
 
 class Test extends TestCase
 {
@@ -61,7 +62,9 @@ class Test extends TestCase
     {
         parent::setUp();
 
-        $this->paginator = CursorPagination::make();
+        $this->paginator = CursorPagination::make(
+            ID::make()->uuid()
+        );
 
         $this->videos = $this
             ->getMockBuilder(VideoSchema::class)

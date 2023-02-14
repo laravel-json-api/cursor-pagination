@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2022 Cloud Creativity Limited
+ * Copyright 2023 Cloud Creativity Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,11 +30,6 @@ use LaravelJsonApi\Eloquent\Contracts\Paginator;
 class CursorPagination implements Paginator
 {
     use HasPageMeta;
-
-    /**
-     * @var ID|null
-     */
-    private ?ID $id;
 
     /**
      * @var string
@@ -79,10 +74,10 @@ class CursorPagination implements Paginator
     /**
      * Fluent constructor.
      *
-     * @param ID|null $id
+     * @param ID $id
      * @return CursorPagination
      */
-    public static function make(ID $id = null): self
+    public static function make(ID $id): self
     {
         return new static($id);
     }
@@ -90,11 +85,10 @@ class CursorPagination implements Paginator
     /**
      * CursorPagination constructor.
      *
-     * @param ID|null $id
+     * @param ID $id
      */
-    public function __construct(ID $id = null)
+    public function __construct(private readonly ID $id)
     {
-        $this->id = $id;
         $this->before = 'before';
         $this->after = 'after';
         $this->limit = 'limit';
