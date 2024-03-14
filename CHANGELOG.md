@@ -3,13 +3,23 @@
 All notable changes to this project will be documented in this file. This project adheres to
 [Semantic Versioning](http://semver.org/) and [this changelog format](http://keepachangelog.com/).
 
+## Unreleased (Laravel 11)
+
+## [4.0.0] - 2024-03-14
+
+### Changed
+
+- Package is now licensed under the MIT license.
+- **BREAKING** Package now requires Laravel 11.
+- Minimum PHP version is now `8.2`.
+
 ## [3.0.0] - 2023-02-14
 
 ### Changed
 
 - Upgrade to Laravel 10 and set minimum PHP version to 8.1.
 - **BREAKING**: The schema's id field must now always be provided to the `CursorPagination::make()` method and/or
-  constructor.
+  constructor. I.e. use `CursorPagination::make($this->id())`
 
 ## [2.1.0] - 2023-01-24
 

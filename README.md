@@ -15,4 +15,4 @@ composer require laravel-json-api/cursor-pagination
 
 ## License
 
-Laravel JSON:API is open-sourced software licensed under the [Apache 2.0 License](./LICENSE).
+Laravel JSON:API is open-sourced software licensed under the [MIT License](./LICENSE).
