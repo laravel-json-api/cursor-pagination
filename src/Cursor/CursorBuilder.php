@@ -65,7 +65,7 @@ class CursorBuilder
      * @param string|null $key
      *      the key column that the before/after cursors related to.
      */
-    public function __construct($query, string $column = null, string $key = null)
+    public function __construct($query, ?string $column = null, ?string $key = null)
     {
         if (!$query instanceof Builder && !$query instanceof Relation) {
             throw new InvalidArgumentException('Expecting an Eloquent query builder or relation.');

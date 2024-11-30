@@ -38,7 +38,7 @@ class Cursor
      * @param string|null $after
      * @param int|null $limit
      */
-    public function __construct(string $before = null, string $after = null, int $limit = null)
+    public function __construct(?string $before = null, ?string $after = null, ?int $limit = null)
     {
         if (is_int($limit) && 1 > $limit) {
             throw new InvalidArgumentException('Expecting a limit that is 1 or greater.');
