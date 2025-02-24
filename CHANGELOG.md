@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file. This projec
 
 ## Unreleased
 
+## [4.1.0] - 2025-02-24
+
+### Added
+
+- Package now supports Laravel 12.
+
 ### Fixed
 
 - Remove deprecation notices in PHP 8.4.
